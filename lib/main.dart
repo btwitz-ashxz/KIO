@@ -64,10 +64,21 @@ class _KioHomeScreenState extends State<KioHomeScreen> with TickerProviderStateM
     )..repeat(reverse: true);
   }
 
-  void _setupTts() async {
-    await _tts.setLanguage("en-US");
-    await _tts.setPitch(0.9); // Techy Jarvis feel
-    await _tts.setSpeechRate(0.95);
+    void _setupTts() async {
+    await _tts.setLanguage("en-US"); // ya "en-IN" Hinglish ke liye
+    await _tts.setSpeechRate(0.48);  // Default (1.0) bohot fast/robotic hota hai, 0.48-0.5 natural human speed hai
+    await _tts.setPitch(1.0);        // Natural voice pitch
+
+    // Available voices me se Deep Male/Neural Voice select karo
+    var voices = await _tts.getVoices;
+    for (var voice in voices) {
+      if (voice["name"].toString().contains("en-us-x-sfg-local") || 
+          voice["name"].toString().contains("male") ||
+          voice["name"].toString().contains("network")) {
+        await _tts.setVoice({"name": voice["name"], "locale": voice["locale"]});
+        break;
+      }
+    }
   }
 
   Future<void> _listen() async {
