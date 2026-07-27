@@ -1,10 +1,10 @@
-name: kio_assistant
+name: kio
 description: "KIO - Techy & Fashion AI Assistant for Ashaz"
 publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: '>=3.2.0 <4.0.0'
 
 dependencies:
   flutter:
@@ -13,6 +13,7 @@ dependencies:
   flutter_tts: ^4.0.2
   speech_to_text: ^7.0.0
   image_picker: ^1.1.2
+  flutter_foreground_task: ^6.0.0
 
 dev_dependencies:
   flutter_test:
@@ -20,7 +21,4 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  dependencies:
-  flutter_foreground_task: ^6.0.0
-  porcupine_flutter: ^3.0.0 # Dedicated battery-efficient Wake-Word engine
   
