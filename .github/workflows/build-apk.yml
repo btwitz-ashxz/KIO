@@ -25,6 +25,9 @@ jobs:
         with:
           channel: 'stable'
 
+      - name: Re-create Android Platform Files (Fix Missing Gradle)
+        run: flutter create . --platforms=android --org=com.ashaz.kio
+
       - name: Install Dependencies
         run: flutter pub get
 
