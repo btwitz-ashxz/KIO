@@ -23,17 +23,17 @@ jobs:
       - name: Set up Flutter SDK
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.x'
           channel: 'stable'
 
       - name: Install Dependencies
         run: flutter pub get
 
       - name: Build Android Release APK
-        run: flutter build apk --release
+        run: flutter build apk --release --no-tree-shake-icons
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: KIO-Assistant-APK
           path: build/app/outputs/flutter-apk/app-release.apk
+          
