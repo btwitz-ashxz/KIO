@@ -25,6 +25,15 @@ jobs:
         with:
           channel: 'stable'
 
+      # Android structure & manifest generate karo
+      - name: Re-create Android Project Files
+        run: flutter create . --platforms=android --org=com.ashaz.kio
+
+      # Permissions automatically AndroidManifest me inject karo
+      - name: Inject Permissions to Manifest
+        run: |
+          sed -i '/<application/i \    <uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />\n    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.CAMERA" />' android/app/src/main/AndroidManifest.xml
+
       - name: Install Dependencies
         run: flutter pub get
 
