@@ -25,6 +25,17 @@ jobs:
         with:
           channel: 'stable'
 
+      # Purana corrupt/v1 android folder delete karke freshly v2 create karega
+      - name: Clean & Force Re-create Android Platform (Fix v1 Embedding)
+        run: |
+          rm -rf android
+          flutter create . --platforms=android --org=com.ashaz.kio
+
+      # Essential Permissions Add Karo
+      - name: Inject Permissions
+        run: |
+          sed -i '/<application/i \    <uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />\n    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.CAMERA" />' android/app/src/main/AndroidManifest.xml
+
       - name: Install Dependencies
         run: flutter pub get
 
