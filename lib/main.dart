@@ -47,7 +47,7 @@ class _KioHomeScreenState extends State<KioHomeScreen> with TickerProviderStateM
 
   bool _isListening = false;
   bool _isProcessing = false;
-  String _statusText = "Awaiting command, Ashaz...";
+  String _statusText = "Awaiting command, Ashaz...\n(Top-right 🔑 icon par tap karke Groq API Key set karein)";
   File? _selectedImage;
   final ImagePicker _picker = ImagePicker();
 
@@ -67,7 +67,7 @@ class _KioHomeScreenState extends State<KioHomeScreen> with TickerProviderStateM
   void _setupTts() async {
     await _tts.setLanguage("en-US");
     await _tts.setPitch(0.9); // Techy Jarvis feel
-    await _tts.setSpeechRate(1.0);
+    await _tts.setSpeechRate(0.95);
   }
 
   Future<void> _listen() async {
@@ -83,6 +83,8 @@ class _KioHomeScreenState extends State<KioHomeScreen> with TickerProviderStateM
             }
           },
         );
+      } else {
+        setState(() => _statusText = "Microphone access denied or not available!");
       }
     } else {
       setState(() => _isListening = false);
@@ -95,7 +97,7 @@ class _KioHomeScreenState extends State<KioHomeScreen> with TickerProviderStateM
     if (image != null) {
       setState(() {
         _selectedImage = File(image.path);
-        _statusText = "Photo selected! Ask KIO about this outfit/tech.";
+        _statusText = "Photo selected! Ask KIO about this outfit or tech.";
       });
     }
   }
@@ -105,7 +107,10 @@ class _KioHomeScreenState extends State<KioHomeScreen> with TickerProviderStateM
     
     final apiKey = _apiKeyController.text.trim();
     if (apiKey.isEmpty) {
-      _speak("Ashaz bro, pehle settings me Groq API key toh daal de!");
+      _speak("Ashaz bro, pehle top right key icon par tap karke Groq API key toh daal de!");
+      setState(() {
+        _statusText = "⚠️ Please set your Groq API Key using the top-right 🔑 icon!";
+      });
       return;
     }
 
@@ -117,21 +122,19 @@ class _KioHomeScreenState extends State<KioHomeScreen> with TickerProviderStateM
     try {
       String responseText = "";
       if (_selectedImage != null) {
-        // Image + Text Processing via Groq Vision Model
         responseText = await _analyzeImageWithGroq(_selectedImage!, query, apiKey);
       } else {
-        // Text/Voice Processing via Llama-3.3
         responseText = await _chatWithGroq(query, apiKey);
       }
 
       setState(() {
         _statusText = responseText;
-        _selectedImage = null; // Reset image after query
+        _selectedImage = null; // Query ke baad image clear ho jayegi
       });
 
       _speak(responseText);
     } catch (e) {
-      setState(() => _statusText = "System Connection Error!");
+      setState(() => _statusText = "Connection Error: ${e.toString()}");
     } finally {
       setState(() => _isProcessing = false);
     }
@@ -149,7 +152,7 @@ class _KioHomeScreenState extends State<KioHomeScreen> with TickerProviderStateM
         "messages": [
           {
             "role": "system",
-            "content": "You are KIO, Ashaz's futuristic Jarvis-like AI buddy. You are a tech wizard AND a sharp fashion/streetwear expert. Speak casually in Hinglish (mix of English and Hindi). Keep answers brief (under 3 sentences), funny, witty, and deeply helpful."
+            "content": "You are KIO, Ashaz's witty, futuristic Jarvis-like AI buddy. You are a tech wizard AND a sharp fashion/streetwear expert. Speak casually in Hinglish (mix of English and Hindi). Keep answers brief (under 3 sentences), witty, sarcastic, and deeply helpful."
           },
           {"role": "user", "content": prompt}
         ]
@@ -159,8 +162,10 @@ class _KioHomeScreenState extends State<KioHomeScreen> with TickerProviderStateM
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return data['choices'][0]['message']['content'];
+    } else {
+      final errData = jsonDecode(response.body);
+      return "Groq Error (${response.statusCode}): ${errData['error']['message'] ?? 'API Key Check Kar'}";
     }
-    return "API Error connection fail ho gaya bhai.";
   }
 
   Future<String> _analyzeImageWithGroq(File imageFile, String prompt, String apiKey) async {
@@ -196,8 +201,9 @@ class _KioHomeScreenState extends State<KioHomeScreen> with TickerProviderStateM
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return data['choices'][0]['message']['content'];
+    } else {
+      return "Vision API Error (${response.statusCode}): Image analyze nahi ho paayi!";
     }
-    return "Image read nahi ho paayi bro!";
   }
 
   void _speak(String text) async {
@@ -208,7 +214,10 @@ class _KioHomeScreenState extends State<KioHomeScreen> with TickerProviderStateM
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("K I O", style: TextStyle(letterSpacing: 4, fontWeight: FontWeight.bold, color: Color(0xFF00F0FF))),
+        title: const Text(
+          "K I O",
+          style: TextStyle(letterSpacing: 4, fontWeight: FontWeight.bold, color: Color(0xFF00F0FF)),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
@@ -221,15 +230,16 @@ class _KioHomeScreenState extends State<KioHomeScreen> with TickerProviderStateM
       body: SafeArea(
         child: Column(
           children: [
-            const SizedBox(height: 20),
-            // Futuristic Hologram Orb Visualizer
+            const SizedBox(height: 15),
+            
+            // Hologram Orb Visualizer
             Center(
               child: AnimatedBuilder(
                 animation: _animController,
                 builder: (context, child) {
                   return Container(
-                    width: 180,
-                    height: 180,
+                    width: 170,
+                    height: 170,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: RadialGradient(
@@ -247,13 +257,17 @@ class _KioHomeScreenState extends State<KioHomeScreen> with TickerProviderStateM
                     ),
                     child: Center(
                       child: Container(
-                        width: 140,
-                        height: 140,
+                        width: 130,
+                        height: 130,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(color: const Color(0xFF00F0FF), width: 1.5),
                         ),
-                        child: const Icon(Icons.blur_on, size: 70, color: Colors.white),
+                        child: Icon(
+                          _isProcessing ? Icons.hourglass_top : Icons.blur_on,
+                          size: 65,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   );
@@ -261,38 +275,38 @@ class _KioHomeScreenState extends State<KioHomeScreen> with TickerProviderStateM
               ),
             ),
             
-            const SizedBox(height: 20),
+            const SizedBox(height: 15),
             
-            // Image Preview (if selected)
+            // Selected Image Preview Card
             if (_selectedImage != null)
               Container(
-                height: 70,
-                width: 70,
+                height: 80,
+                width: 80,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFF00F0FF)),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF00F0FF), width: 1.5),
                   image: DecorationImage(image: FileImage(_selectedImage!), fit: BoxFit.cover),
                 ),
               ),
 
-            // Status / Output Screen
+            // Main Status Output Screen
             Expanded(
               child: Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 alignment: Alignment.center,
                 child: SingleChildScrollView(
                   child: Text(
                     _statusText,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 16, color: Colors.white, height: 1.4),
+                    style: const TextStyle(fontSize: 15, color: Colors.white, height: 1.4),
                   ),
                 ),
               ),
             ),
 
-            // Controls (Voice, Image Upload, Silent Typing)
+            // Bottom Input Controls Bar
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: const BoxDecoration(
                 color: Color(0xFF0B1329),
                 borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -306,6 +320,7 @@ class _KioHomeScreenState extends State<KioHomeScreen> with TickerProviderStateM
                   Expanded(
                     child: TextField(
                       controller: _textController,
+                      style: const TextStyle(color: Colors.white),
                       decoration: const InputDecoration(
                         hintText: "Silent mode? Type here...",
                         hintStyle: TextStyle(color: Colors.grey, fontSize: 13),
@@ -321,7 +336,10 @@ class _KioHomeScreenState extends State<KioHomeScreen> with TickerProviderStateM
                     },
                   ),
                   IconButton(
-                    icon: Icon(_isListening ? Icons.mic : Icons.mic_none, color: _isListening ? Colors.red : const Color(0xFF00F0FF)),
+                    icon: Icon(
+                      _isListening ? Icons.mic : Icons.mic_none,
+                      color: _isListening ? Colors.red : const Color(0xFF00F0FF),
+                    ),
                     onPressed: _listen,
                   ),
                 ],
@@ -338,15 +356,24 @@ class _KioHomeScreenState extends State<KioHomeScreen> with TickerProviderStateM
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF0B1329),
-        title: const Text("Groq API Key"),
+        title: const Text("Set Groq API Key", style: TextStyle(color: Color(0xFF00F0FF))),
         content: TextField(
           controller: _apiKeyController,
-          decoration: const InputDecoration(hintText: "Paste key here"),
+          style: const TextStyle(color: Colors.white),
+          decoration: const InputDecoration(
+            hintText: "Paste gsk_... key here",
+            hintStyle: TextStyle(color: Colors.grey),
+          ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Save"),
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() {
+                _statusText = "API Key saved! KIO is ready for Ashaz.";
+              });
+            },
+            child: const Text("Save Key", style: TextStyle(color: Color(0xFF00F0FF))),
           )
         ],
       ),
