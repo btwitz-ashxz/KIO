@@ -20,4 +20,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  dependencies:
+  flutter_foreground_task: ^6.0.0
+  porcupine_flutter: ^3.0.0 # Dedicated battery-efficient Wake-Word engine
   
